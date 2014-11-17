@@ -18,12 +18,9 @@
     "node": ">=0.8.15"
   },
   "dependencies": {
-    "yaml": "~0.2.3",
-    "coffee-script": "~1.6.2",
-    "config": "~0.4.27",
-    "mitm-proxy": "0.0.1"
-  },
-  "devDependencies": {
-    "grunt-contrib-coffee": "~0.7.0"
+    "coffee-script": "latest",
+    "config": "latest",
+    "request": "latest",
+    "http-server": "latest"
   }
 }

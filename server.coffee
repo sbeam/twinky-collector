@@ -1,37 +1,35 @@
 #!/usr/bin/env coffee
 
-Prox = require('mitm-proxy')
-url = require('url')
+http = require 'http'
 config = require 'config'
+sys = require 'sys'
+Request = require 'request'
 
-setCORSHeaders = (req, res, next) ->
-  res.setHeader 'Access-Control-Allow-Origin', '*'
-  res.setHeader 'Access-Control-Allow-Methods', 'POST'
-  res.setHeader 'Access-Control-Max-Age', '604800'
-  res.setHeader 'Access-Control-Allow-Credentials', 'true'
+serverConfig = config.get('server')
 
-  next()
+http.createServer((req, resp)->
 
-class Masher
-  url_rewrite: (req_url)->
-    # http://stats.reviewed.com:8086/db/hydra-timing/series?u
-    req_url.host = 'localhost:8086'
-    req_url.pathname = '/db/hydra-timing/series'
-    req_url.search = "?u=root&p=root"
-    req_url
+    if req.method is 'POST' and req.url is "/#{serverConfig.route}"
+        body = ""
 
-  constructor: (@proxy) ->
-      @proxy.on('request', (request, req_url)->
-          if request.method is 'POST'
-              url = req_url
-              console.info "Request has been rewritten, new request: " + url.format(req_url)
-              console.info("[#{url.hostname} #{url.pathname}] - Processor request event, url: #{url.format(req_url)}")
-          else
-              req_url.port = 9999 # TODO mitm needs a way to cancel here
-      )
-      @proxy.on('request_data', (data)->
-          console.info "+++ RECEIVED data"
-          console.log(JSON.parse(data))
-      )
+        req.on 'data', (chunk)->
+            body += chunk
 
-new Prox({proxy_port: 8080, verbose: true}, Masher)
+        req.on 'end', ->
+            Request.post(serverConfig.upstream_url, form: body).pipe(resp)
+
+    else if req.method is 'OPTIONS'
+        resp.writeHead(200, {
+            'Access-Control-Allow-Origin': '*'
+            'Access-Control-Allow-Methods': 'POST'
+            'Access-Control-Max-Age': '604800'
+            'Access-Control-Allow-Credentials': 'true'
+        })
+        resp.end()
+    else
+        resp.statusCode = 404
+        resp.end()
+
+).listen(serverConfig.proxy_port)
+
+sys.puts("Proxying /#{serverConfig.route} to #{serverConfig.upstream_url} at port #{serverConfig.proxy_port}")

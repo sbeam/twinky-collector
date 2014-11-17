@@ -1,0 +1,7 @@
+{
+    "server": {
+        "proxy_port": 5999,
+        "route": "send",
+        "upstream_url": "http://stats.reviewed.com:8086/db/hydra-timing/series?u=root&p=root"
+    }
+}
