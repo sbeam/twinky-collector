@@ -19,11 +19,14 @@ http.createServer((req, resp)->
             Request.post(serverConfig.upstream_url, form: body).pipe(resp)
 
     else if req.method is 'OPTIONS'
-        resp.writeHead(200, {
+        resp.writeHead(204, {
             'Access-Control-Allow-Origin': '*'
-            'Access-Control-Allow-Methods': 'POST'
+            'Access-Control-Allow-Methods': 'POST,OPTIONS'
+            'Access-Control-Allow-Headers': 'Authorization,Content-Type,Accept,Origin,User-Agent,DNT,Cache-Control,X-Mx-ReqToken,Keep-Alive,X-Requested-With,If-Modified-Since'
             'Access-Control-Max-Age': '604800'
             'Access-Control-Allow-Credentials': 'true'
+            'Content-type': 'text/plain charset=UTF-8'
+            'Content-length': '0'
         })
         resp.end()
     else
